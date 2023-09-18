@@ -26,11 +26,14 @@ class CounterViewController: UIViewController {
     
     @IBOutlet weak var resetButton: UIButton!
     
+    private var isBelowZero: Bool = false
+    
     private var counterValue: Int = 0 {
         didSet {
             if counterValue >= 0 {
                 counterValueLabel.text = "Значение счётчика: \(counterValue)"
             } else {
+                isBelowZero = true
                 let message = "[\(currentDateAndTime())]: попытка уменьшить значение счётчика ниже 0"
                 changeHistory.text = changeHistory.text + "\n" + message
                 counterValue = 0
@@ -132,19 +135,23 @@ class CounterViewController: UIViewController {
     }
     
     private func showHistoryOfChanges(buttonTapped: ButtonTapped) {
-        var newEntry: String = ""
+        var newChange: String = ""
         
         switch buttonTapped {
             
         case .increasedButton:
-            newEntry = "[\(currentDateAndTime())]: значение изменено на +1"
+            newChange = "[\(currentDateAndTime())]: значение изменено на +1"
         case .decreasedButton:
-            newEntry = "[\(currentDateAndTime())]: значение изменено на -1"
+            if isBelowZero {
+                isBelowZero = false
+                return
+            }
+            newChange = "[\(currentDateAndTime())]: значение изменено на -1"
         case .resetButton:
-            newEntry = "[\(currentDateAndTime())]: значение сброшено"
+            newChange = "[\(currentDateAndTime())]: значение сброшено"
         }
         
-        changeHistory.text = changeHistory.text + "\n" + newEntry
+        changeHistory.text = changeHistory.text + "\n" + newChange
     }
     
 }

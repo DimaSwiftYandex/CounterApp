@@ -31,6 +31,8 @@ class CounterViewController: UIViewController {
             if counterValue >= 0 {
                 counterValueLabel.text = "Значение счётчика: \(counterValue)"
             } else {
+                let message = "[\(currentDateAndTime())]: попытка уменьшить значение счётчика ниже 0"
+                changeHistory.text = changeHistory.text + "\n" + message
                 counterValue = 0
                 counterValueLabel.text = "Значение счётчика: \(counterValue)"
             }
@@ -39,8 +41,9 @@ class CounterViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        counterValueLabel.text = "Значение счётчика: \(counterValue)"
         setupView()
+        counterValueLabel.text = "Значение счётчика: \(counterValue)"
+        changeHistory.text = "История изменений:"
         
     }
     
@@ -48,17 +51,6 @@ class CounterViewController: UIViewController {
     @IBAction func buttonTapped(_ sender: UIButton) {
         
         var buttonTapped: ButtonTapped?
-        
-        //        switch sender {
-        //        case increaseButton:
-        //            setLabelValue(buttonTapped: .increasedButton)
-        //        case decreaseButton:
-        //            setLabelValue(buttonTapped: .decreasedButton)
-        //        case resetButton:
-        //            setLabelValue(buttonTapped: .resetButton)
-        //        default:
-        //            break
-        //        }
         
         switch sender {
         case increaseButton:
@@ -73,27 +65,58 @@ class CounterViewController: UIViewController {
         
         if let buttonTapped = buttonTapped {
             setLabelValue(buttonTapped: buttonTapped)
+            showHistoryOfChanges(buttonTapped: buttonTapped)
         }
     }
     
     private func setupView() {
-        increaseButton.backgroundColor = .red
-        increaseButton.setTitle("+", for: .normal)
-        increaseButton.tintColor = .white
-        increaseButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
-        increaseButton.layer.cornerRadius = 10
         
-        decreaseButton.backgroundColor = .blue
-        decreaseButton.setTitle("-", for: .normal)
-        decreaseButton.tintColor = .white
-        decreaseButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
-        decreaseButton.layer.cornerRadius = 10
+        changeHistory.textColor = .white
+        changeHistory.isEditable = false
         
-        resetButton.backgroundColor = .gray
-        resetButton.setTitle("reset", for: .normal)
-        resetButton.tintColor = .white
-        resetButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
-        resetButton.layer.cornerRadius = 10
+        counterValueLabel.font = UIFont.systemFont(ofSize: 18, weight: .bold)
+        counterValueLabel.numberOfLines = 0
+        counterValueLabel.textAlignment = .center
+        
+        
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: 20, weight: .bold),
+            .foregroundColor: UIColor.white
+        ]
+        
+        let buttonDetails: [(
+            button: UIButton,
+            title: String,
+            color: UIColor
+        )] = [
+            (increaseButton, "+", .red),
+            (decreaseButton, "-", .blue),
+            (resetButton, "reset", .gray)
+        ]
+        
+        for detail in buttonDetails {
+            detail.button.backgroundColor = detail.color
+            detail.button.setTitleColor(.white, for: .normal)
+            detail.button.setAttributedTitle(
+                NSAttributedString(
+                    string: detail.title,
+                    attributes: attributes
+                ),
+                for: .normal
+            )
+            detail.button.layer.cornerRadius = 10
+        }
+        
+//        increaseButton.titleLabel?.font = UIFont.systemFont(ofSize: 40, weight: .bold)
+//        decreaseButton.titleLabel?.font = UIFont.systemFont(ofSize: 40, weight: .bold)
+//        resetButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 40)
+       
+    }
+    
+    private func currentDateAndTime() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd.MM.yyyy HH:mm:ss"
+        return dateFormatter.string(from: Date())
     }
     
     private func setLabelValue(buttonTapped: ButtonTapped) {
@@ -107,6 +130,21 @@ class CounterViewController: UIViewController {
             counterValue = 0
         }
     }
-
+    
+    private func showHistoryOfChanges(buttonTapped: ButtonTapped) {
+        var newEntry: String = ""
+        
+        switch buttonTapped {
+            
+        case .increasedButton:
+            newEntry = "[\(currentDateAndTime())]: значение изменено на +1"
+        case .decreasedButton:
+            newEntry = "[\(currentDateAndTime())]: значение изменено на -1"
+        case .resetButton:
+            newEntry = "[\(currentDateAndTime())]: значение сброшено"
+        }
+        
+        changeHistory.text = changeHistory.text + "\n" + newEntry
+    }
     
 }
